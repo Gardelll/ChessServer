@@ -1,0 +1,56 @@
+plugins {
+    // Apply the java plugin to add support for Java
+    id 'java'
+
+    // Apply the application plugin to add support for building a CLI application.
+    id 'application'
+    id 'com.google.protobuf' version '0.8.13'
+}
+
+repositories {
+    // Use jcenter for resolving dependencies.
+    jcenter()
+    mavenCentral()
+}
+
+def lombok_version = '1.18.12'
+def protobufVersion = '3.13.0'
+def protocVersion = protobufVersion
+
+dependencies {
+    implementation "com.google.protobuf:protobuf-java:$protobufVersion"
+
+    // https://mvnrepository.com/artifact/io.netty/netty-all
+    implementation 'io.netty:netty-all:4.1.51.Final'
+
+    // lombok
+    compileOnly 'org.projectlombok:lombok:' + lombok_version
+    annotationProcessor 'org.projectlombok:lombok:' + lombok_version
+    testCompileOnly 'org.projectlombok:lombok:' + lombok_version
+    testAnnotationProcessor 'org.projectlombok:lombok:' + lombok_version
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = 'top.gardel.chess.App'
+}
+
+build {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+}

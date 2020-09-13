@@ -26,6 +26,16 @@ public class App {
 
     @EventHandler
     public void onAuth(AuthEvent event) {
+        Player old = server.getPlayers().remove(event.getChannel().id());
+        if (old != null) {
+            Competition oldCompetition = old.getCompetition();
+            if (oldCompetition != null && oldCompetition.getPlayerA().equals(old)) {
+                oldCompetition.setPlayerB(null);
+                old.sendFinish();
+                old.sendOperationResponse(CompetitionOperation.Operation.Leave);
+                server.getCompetitions().remove(oldCompetition.getId());
+            }
+        }
         String uuid = event.getPlayerUuid();
         Player player = new Player(uuid == null || uuid.isEmpty() ? null : UUID.fromString(uuid), event.getChannel());
         player.setState(Player.State.FREE);
@@ -74,6 +84,7 @@ public class App {
             return;
         }
         Competition competition = server.getCompetitions().get(event.getCompetitionId());
+        if (competition == null) competition = player.getCompetition();
         if (competition == null) {
             event.getChannel().writeAndFlush(Response.newBuilder().setError("找不到该对局").build());
             return;

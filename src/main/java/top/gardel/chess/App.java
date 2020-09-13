@@ -2,6 +2,7 @@ package top.gardel.chess;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Logger;
 import top.gardel.chess.event.AuthEvent;
 import top.gardel.chess.event.CompetitionCreateEvent;
 import top.gardel.chess.event.CompetitionJoinEvent;
@@ -10,12 +11,14 @@ import top.gardel.chess.event.CompetitionPutEvent;
 import top.gardel.chess.event.CompetitionResetEvent;
 import top.gardel.chess.event.EventHandler;
 import top.gardel.chess.event.GetStatisticsEvent;
+import top.gardel.chess.event.SyncEvent;
 import top.gardel.chess.proto.CompetitionOperation;
 import top.gardel.chess.proto.Response;
 
 public class App {
     private static App INSTANCE;
     private final Server server;
+    private final Logger logger = Logger.getLogger("App");
 
     public App(Server server) {
         this.server = server;
@@ -27,6 +30,7 @@ public class App {
         Player player = new Player(uuid == null || uuid.isEmpty() ? null : UUID.fromString(uuid), event.getChannel());
         player.setState(Player.State.FREE);
         server.getPlayers().put(event.getChannel().id(), player);
+        logger.info(String.format("%s 加入游戏", player.getUuid()));
         player.sendAuthInfo();
     }
 
@@ -41,6 +45,7 @@ public class App {
         player.joinCompetition(competition);
         player.sendOperationResponse(CompetitionOperation.Operation.Create);
         server.getCompetitions().put(competition.getId(), competition);
+        logger.info(String.format("玩家 %s 用数字 %d 创建了对局", player.getUuid(), competition.getId()));
     }
 
     @EventHandler
@@ -58,6 +63,7 @@ public class App {
         player.joinCompetition(competition);
         player.sendOperationResponse(CompetitionOperation.Operation.Join);
         competition.setPlayerB(player);
+        logger.info(String.format("玩家 %s 用数字 %d 加入了对局", player.getUuid(), competition.getId()));
     }
 
     @EventHandler
@@ -78,9 +84,14 @@ public class App {
         if (player.equals(competition.getPlayerB())) competition.setPlayerB(null);
         else if (player.equals(competition.getPlayerA())) {
             Optional.ofNullable(competition.getPlayerB())
-                .ifPresent(Player::sendFinish);
+                .ifPresent(player1 -> {
+                    player1.sendFinish();
+                    player1.leaveCompetition();
+                });
             server.getCompetitions().remove(competition.getId());
+            logger.info(String.format("对局 %d 已删除", competition.getId()));
         }
+        logger.info(String.format("玩家 %s 离开了对局 %d", player.getUuid(), competition.getId()));
     }
 
     @EventHandler
@@ -103,6 +114,12 @@ public class App {
                 competition.getPlayerB().sendFinish();
             }
         }
+    }
+
+    @EventHandler
+    public void onSync(SyncEvent event) {
+        Player player = event.getPlayer();
+        player.syncChess();
     }
 
     @EventHandler

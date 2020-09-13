@@ -57,6 +57,21 @@ public class Player {
         else return channel.newFailedFuture(new IllegalStateException("not in game"));
     }
 
+    public void syncChess() {
+        if (state == State.PLAYING && competition != null) {
+            int size = competition.getSize();
+            boolean i_am_a = equals(competition.getPlayerA());
+            for (int i = 1; i <= size; i++) {
+                for (int j = 1; j <= size; j++) {
+                    byte c = competition.getChessAt(i, j);
+                    if (c != 0) {
+                        sendPutChess(i_am_a ? (c == 'A') : (c == 'B'), i, j);
+                    }
+                }
+            }
+        }
+    }
+
     public ChannelFuture sendAuthInfo() {
         if (state == State.NOT_AUTHED)
             return channel.newFailedFuture(new IllegalStateException("not authed"));
@@ -102,14 +117,21 @@ public class Player {
     public ChannelFuture sendStatistics() {
         if (competition != null) {
             var builder = Statistics.newBuilder();
+            var builder2 = Statistics.newBuilder();
             if (equals(competition.getPlayerA())) {
                 builder.setWinTime(competition.getPlayerAWin())
                     .setLoseTime(competition.getPlayerALose());
+                channel.writeAndFlush(Response.newBuilder().setBody(Any.pack(builder.setMyself(true).build())));
+                builder2.setWinTime(competition.getPlayerBWin())
+                    .setLoseTime(competition.getPlayerBLose());
             } else if (equals(competition.getPlayerB())) {
                 builder.setWinTime(competition.getPlayerBWin())
                     .setLoseTime(competition.getPlayerBLose());
+                channel.writeAndFlush(Response.newBuilder().setBody(Any.pack(builder.setMyself(true).build())));
+                builder2.setWinTime(competition.getPlayerAWin())
+                    .setLoseTime(competition.getPlayerALose());
             } else return channel.writeAndFlush(Response.newBuilder().setError("未在对局中").build());
-            return channel.writeAndFlush(Response.newBuilder().setBody(Any.pack(builder.build())));
+            return channel.writeAndFlush(Response.newBuilder().setBody(Any.pack(builder.setMyself(false).build())));
         } else return channel.newFailedFuture(new IllegalStateException("competition not found"));
     }
 

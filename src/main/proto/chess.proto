@@ -52,7 +52,11 @@ message GetStatistics {
   bool myself = 1;
 }
 
+message Sync {
+}
+
 message Statistics {
   uint32 winTime = 1;
   uint32 loseTime = 2;
+  bool myself = 3;
 }

@@ -18,11 +18,13 @@ import top.gardel.chess.event.CompetitionPutEvent;
 import top.gardel.chess.event.CompetitionResetEvent;
 import top.gardel.chess.event.EventHandler;
 import top.gardel.chess.event.GetStatisticsEvent;
+import top.gardel.chess.event.SyncEvent;
 import top.gardel.chess.proto.AuthInfo;
 import top.gardel.chess.proto.CompetitionOperation;
 import top.gardel.chess.proto.GetStatistics;
 import top.gardel.chess.proto.Request;
 import top.gardel.chess.proto.Response;
+import top.gardel.chess.proto.Sync;
 
 public class ServerHandler extends SimpleChannelInboundHandler<Request> {
     private final Map<ChannelId, Player> players;
@@ -103,6 +105,9 @@ public class ServerHandler extends SimpleChannelInboundHandler<Request> {
         } else if (body.is(GetStatistics.class)) {
             Player player = players.get(channel.id());
             event = new GetStatisticsEvent(channel, player, body.unpack(GetStatistics.class));
+        } else if (body.is(Sync.class)) {
+            Player player = players.get(channel.id());
+            event = new SyncEvent(channel, player, body.unpack(Sync.class));
         }
         if (event != null) getEventHandler(event.getClass()).invoke(app, event);
     }

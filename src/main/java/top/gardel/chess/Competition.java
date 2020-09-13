@@ -50,6 +50,10 @@ public class Competition {
         this.playerB = playerB;
     }
 
+    public int getSize() {
+        return chessPlate.length;
+    }
+
     /**
      * 获取棋子
      * @param x [1, 3]
@@ -118,7 +122,6 @@ public class Competition {
 
     public byte checkWinner() {
         if (!hasPlayerB()) return 0;
-        if (isFull()) return 'N';
         for (byte[] bytes : chessPlate) {
             byte lastChess = bytes[0];
             byte connected = 1;
@@ -167,6 +170,7 @@ public class Competition {
             }
             if (connected == 3 && lastChess != 0) return lastChess;
         }
+        if (isFull()) return 'N';
         return 0;
     }
 

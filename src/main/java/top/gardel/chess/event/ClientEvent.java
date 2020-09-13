@@ -16,7 +16,8 @@ public abstract class ClientEvent<T extends Message> {
         this.request = request;
     }
 
-    private ClientEvent() { }
+    private ClientEvent() {
+    }
 
     public Channel getChannel() {
         return channel;

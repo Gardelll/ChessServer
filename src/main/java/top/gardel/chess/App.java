@@ -24,6 +24,25 @@ public class App {
         this.server = server;
     }
 
+    public static void main(String[] args) {
+        int port = 5544;
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
+        Server server = new Server(port);
+        server.run();
+        INSTANCE = new App(server);
+        try {
+            server.getServerChannel().closeFuture().sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static App getInstance() {
+        return INSTANCE;
+    }
+
     @EventHandler
     public void onAuth(AuthEvent event) {
         Player old = server.getPlayers().remove(event.getChannel().id());
@@ -90,7 +109,7 @@ public class App {
             return;
         }
         player.sendFinish().addListener((future) -> {
-            if(future.isSuccess()) player.leaveCompetition();
+            if (future.isSuccess()) player.leaveCompetition();
         });
         if (player.equals(competition.getPlayerB())) competition.setPlayerB(null);
         else if (player.equals(competition.getPlayerA())) {
@@ -156,24 +175,5 @@ public class App {
             return;
         }
         player.sendStatistics();
-    }
-
-    public static void main(String[] args) {
-        int port = 5544;
-        if (args.length > 0) {
-            port = Integer.parseInt(args[0]);
-        }
-        Server server = new Server(port);
-        server.run();
-        INSTANCE = new App(server);
-        try {
-            server.getServerChannel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static App getInstance() {
-        return INSTANCE;
     }
 }

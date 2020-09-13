@@ -37,6 +37,10 @@ public class Server {
         this.port = port;
     }
 
+    public static Server getInstance() {
+        return INSTANCE;
+    }
+
     public void run() {
         // Create event loop groups. One for incoming connections handling and
         // second for handling actual event by workers
@@ -96,10 +100,6 @@ public class Server {
 
     public Map<ChannelId, Player> getPlayers() {
         return players;
-    }
-
-    public static Server getInstance() {
-        return INSTANCE;
     }
 
 }

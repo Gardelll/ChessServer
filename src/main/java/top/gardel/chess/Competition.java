@@ -56,6 +56,7 @@ public class Competition {
 
     /**
      * 获取棋子
+     *
      * @param x [1, 3]
      * @param y [1, 3]
      * @return 0, 'A', 'B'
@@ -138,7 +139,7 @@ public class Competition {
             byte lastChess = chessPlate[0][j];
             byte connected = 1;
             for (int i = 1; i < chessPlate.length; i++) {
-                if (lastChess != 0)  {
+                if (lastChess != 0) {
                     if (chessPlate[i][j] == lastChess) connected++;
                     else connected = 1;
                 }
@@ -150,7 +151,7 @@ public class Competition {
             byte lastChess = chessPlate[0][0];
             byte connected = 1;
             for (int i = 1, j = 1; i < chessPlate.length && j < chessPlate[0].length; j = ++i) {
-                if (lastChess != 0)  {
+                if (lastChess != 0) {
                     if (chessPlate[i][j] == lastChess) connected++;
                     else connected = 1;
                 }
@@ -162,7 +163,7 @@ public class Competition {
             byte lastChess = chessPlate[0][2];
             byte connected = 1;
             for (int i = 1, j = 1; i < chessPlate.length && j >= 0; j--, i++) {
-                if (lastChess != 0)  {
+                if (lastChess != 0) {
                     if (chessPlate[i][j] == lastChess) connected++;
                     else connected = 1;
                 }

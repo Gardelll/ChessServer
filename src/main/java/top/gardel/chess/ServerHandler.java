@@ -122,7 +122,8 @@ public class ServerHandler extends SimpleChannelInboundHandler<Request> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         String errMsg = cause.getLocalizedMessage();
-        if (ctx.channel().isActive()) ctx.writeAndFlush(Response.newBuilder().setError(errMsg == null ? cause.getClass().getSimpleName() : errMsg ).build());
+        if (ctx.channel().isActive())
+            ctx.writeAndFlush(Response.newBuilder().setError(errMsg == null ? cause.getClass().getSimpleName() : errMsg).build());
     }
 
     @SuppressWarnings("rawtypes")

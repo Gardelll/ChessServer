@@ -20,29 +20,26 @@ public class App {
     private final Server server;
     private final Logger logger = Logger.getLogger("App");
 
-    public App(Server server) {
-        this.server = server;
-    }
-
-    public static void main(String[] args) {
-        int port = 5544;
-        if (args.length > 0) {
-            port = Integer.parseInt(args[0]);
-        }
-        Server server = new Server(port);
-        server.run();
-        INSTANCE = new App(server);
-        try {
-            server.getServerChannel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    /**
+     * 启动服务器
+     *
+     * @param server 要启动的服务器
+     */
+    private App(Server server) {
+        synchronized (App.class) {
+            if (INSTANCE != null)
+                throw new IllegalStateException("App 已经实例化");
+            this.server = server;
+            INSTANCE = this;
+            server.run();
         }
     }
 
-    public static App getInstance() {
-        return INSTANCE;
-    }
-
+    /**
+     * 登录回调
+     *
+     * @param event 登录事件
+     */
     @EventHandler
     public void onAuth(AuthEvent event) {
         Player old = server.getPlayers().remove(event.getChannel().id());
@@ -63,6 +60,15 @@ public class App {
         player.sendAuthInfo();
     }
 
+    public static App getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * 创建对局回调
+     *
+     * @param event 创建对局事件
+     */
     @EventHandler
     public void onCompetitionCreate(CompetitionCreateEvent event) {
         Player player = event.getPlayer();
@@ -77,6 +83,11 @@ public class App {
         logger.info(String.format("玩家 %s 用数字 %d 创建了对局", player.getUuid(), competition.getId()));
     }
 
+    /**
+     * 加入对局回调
+     *
+     * @param event 加入对局事件
+     */
     @EventHandler
     public void onCompetitionJoin(CompetitionJoinEvent event) {
         Player player = event.getPlayer();
@@ -95,6 +106,11 @@ public class App {
         logger.info(String.format("玩家 %s 用数字 %d 加入了对局", player.getUuid(), competition.getId()));
     }
 
+    /**
+     * 离开对局回调
+     *
+     * @param event 离开对局事件
+     */
     @EventHandler
     public void onCompetitionLeave(CompetitionLeaveEvent event) {
         Player player = event.getPlayer();
@@ -124,6 +140,11 @@ public class App {
         logger.info(String.format("玩家 %s 离开了对局 %d", player.getUuid(), competition.getId()));
     }
 
+    /**
+     * 放置棋子回调
+     *
+     * @param event 放置棋子事件
+     */
     @EventHandler
     public void onCompetitionPut(CompetitionPutEvent event) {
         Player player = event.getPlayer();
@@ -146,12 +167,22 @@ public class App {
         }
     }
 
+    /**
+     * 同步棋子回调
+     *
+     * @param event 同步棋子事件
+     */
     @EventHandler
     public void onSync(SyncEvent event) {
         Player player = event.getPlayer();
         player.syncChess();
     }
 
+    /**
+     * 重置对局回调
+     *
+     * @param event 重置对局事件
+     */
     @EventHandler
     public void onCompetitionReset(CompetitionResetEvent event) {
         Player player = event.getPlayer();
@@ -167,6 +198,11 @@ public class App {
         competition.reset();
     }
 
+    /**
+     * 获取得分统计回调
+     *
+     * @param event 获取得分统计事件
+     */
     @EventHandler
     public void onGetStatistics(GetStatisticsEvent event) {
         Player player = event.getPlayer();
@@ -175,5 +211,19 @@ public class App {
             return;
         }
         player.sendStatistics();
+    }
+
+    public static void main(String[] args) {
+        int port = 5544;
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
+        Server server = new Server(port);
+        new App(server);
+        try {
+            server.getServerChannel().closeFuture().sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

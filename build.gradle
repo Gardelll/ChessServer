@@ -1,27 +1,24 @@
 plugins {
-    // Apply the java plugin to add support for Java
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'java'
-
-    // Apply the application plugin to add support for building a CLI application.
-    id 'application'
-    id 'com.google.protobuf' version '0.8.13'
+    id 'com.google.protobuf' version '0.8.16'
 }
 
 repositories {
-    // Use jcenter for resolving dependencies.
     jcenter()
     mavenCentral()
+    mavenLocal()
 }
 
-def lombok_version = '1.18.12'
-def protobufVersion = '3.13.0'
+def lombok_version = '1.18.20'
+def protobufVersion = '3.15.8'
 def protocVersion = protobufVersion
 
 dependencies {
     implementation "com.google.protobuf:protobuf-java:$protobufVersion"
 
     // https://mvnrepository.com/artifact/io.netty/netty-all
-    implementation 'io.netty:netty-all:4.1.51.Final'
+    implementation 'io.netty:netty-all:4.1.63.Final'
 
     // lombok
     compileOnly 'org.projectlombok:lombok:' + lombok_version
@@ -30,7 +27,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:' + lombok_version
 
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 protobuf {
@@ -45,12 +42,21 @@ sourceSets {
     }
 }
 
-application {
-    // Define the main class for the application.
-    mainClassName = 'top.gardel.chess.App'
-}
+def mainClassName = 'top.gardel.chess.App'
 
 build {
     sourceCompatibility = 11
     targetCompatibility = 11
+}
+
+jar {
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = "UTF-8"
 }

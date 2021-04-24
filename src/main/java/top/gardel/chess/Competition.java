@@ -23,6 +23,12 @@ public class Competition {
     private int playerALose;
     private int playerBLose;
 
+    /**
+     * 构造一个对局
+     *
+     * @param id      对局编号
+     * @param playerA 发起对局的玩家，记作玩家 A
+     */
     public Competition(int id, Player playerA) {
         this.id = id;
         this.playerA = playerA;
@@ -31,8 +37,15 @@ public class Competition {
         playerAWin = playerBWin = playerALose = playerBLose = 0;
     }
 
+    /**
+     * 加入玩家 B 或退出玩家 B
+     *
+     * @param playerB 玩家 B, 若为 null 则代表退出
+     */
     public void setPlayerB(Player playerB) {
         if (playerB != null) {
+            // 玩家 B 加入
+            // 通知玩家 A: 玩家 B 加入
             playerA.getChannel().writeAndFlush(Response.newBuilder()
                 .setBody(Any.pack(CompetitionOperation.newBuilder()
                     .setId(getId())
@@ -40,6 +53,8 @@ public class Competition {
                     .setPlayerB(AuthInfo.newBuilder().setUuid(playerB.getUuid().toString()).build())
                     .build())));
         } else {
+            // 玩家 B 退出
+            // 通知玩家 A: 玩家 B 退出
             playerA.getChannel().writeAndFlush(Response.newBuilder()
                 .setBody(Any.pack(CompetitionOperation.newBuilder()
                     .setId(getId())
@@ -50,6 +65,11 @@ public class Competition {
         this.playerB = playerB;
     }
 
+    /**
+     * 获取棋盘大小
+     *
+     * @return 棋盘大小
+     */
     public int getSize() {
         return chessPlate.length;
     }
@@ -66,10 +86,25 @@ public class Competition {
         return chessPlate[x - 1][y - 1];
     }
 
+    /**
+     * 判断坐标上是否有棋
+     *
+     * @param x [1, 3]
+     * @param y [1, 3]
+     * @return 有棋则返回 true
+     */
     public boolean hasChess(int x, int y) {
         return getChessAt(x, y) != 0;
     }
 
+    /**
+     * 下棋
+     *
+     * @param player 代表下棋的玩家
+     * @param x      [1, 3]
+     * @param y      [1, 3]
+     * @return 是否成功
+     */
     public boolean putChess(Player player, int x, int y) {
         if (hasChess(x, y)) return false;
         Objects.requireNonNull(player);
@@ -85,6 +120,9 @@ public class Competition {
         return true;
     }
 
+    /**
+     * 重置对局
+     */
     public void reset() {
         byte winner = checkWinner();
         for (int i = 0; i < chessPlate.length; i++) {
@@ -112,6 +150,11 @@ public class Competition {
         }
     }
 
+    /**
+     * 是否已满
+     *
+     * @return 若已满则返回 true
+     */
     public boolean isFull() {
         for (byte[] bytes : chessPlate) {
             for (int j = 0; j < chessPlate[0].length; j++) {
@@ -121,6 +164,11 @@ public class Competition {
         return true;
     }
 
+    /**
+     * 获取获胜方
+     *
+     * @return 0: 无人获胜, A: A获胜, B: B获胜, N: 无人获胜
+     */
     public byte checkWinner() {
         if (!hasPlayerB()) return 0;
         for (byte[] bytes : chessPlate) {
@@ -175,6 +223,11 @@ public class Competition {
         return 0;
     }
 
+    /**
+     * 玩家 B 是否加入
+     *
+     * @return 加入返回 true
+     */
     public boolean hasPlayerB() {
         return playerB != null;
     }
